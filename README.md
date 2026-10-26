@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 
 <h1 class="low_profile_header">AMAKER - DOCUMENTATION</h1>
-<span class="inline_code">
-    ./amake [make/run/clean] [debug] [@header]
-</span>
 <div>
     <a href="https://cartigli.github.io/amake/">Styled Documentation</a>
 </div>
+<span class="inline_code">
+    ./amake [make/run/clean] [debug] [@header]
+</span>
 <div>
     <h3 class="low_profile_header">
         Amake parses the <code>make</code> file in the CWD & runs the specified command

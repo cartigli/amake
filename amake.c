@@ -97,6 +97,7 @@ typedef struct {
     string origin;
     string pt_sep;
     string pt_each;
+    char *allocated;
 } token;
 
 #define token_0(token) { memset(&token, 0, sizeof(token)); }
@@ -269,10 +270,9 @@ static uc_t expand_sub_token(const char *tstr, const len_t tlen, token **tokbuf,
     len_t *tcap, len_t *have, const Dset *const gset, const len_t nsets, uc_t *err,
     const Format *fmt, const char *mast, const len_t mlen)
 {
-    /* parses & pastes directive sequences
-       unlike non-directive series, series/tokens pasted in directives are
-       fully expanded before being 'pasted' into the directive's output
-    */
+    /* parses & pastes directive sequences                                 *
+       unlike non-directive series, series/tokens pasted in directives are *
+       fully expanded before being 'pasted' into the directive's output    */
     len_t ns     = 0;
     len_t pasted = 0;
     char *paste_expanded;
@@ -302,8 +302,10 @@ static uc_t expand_sub_token(const char *tstr, const len_t tlen, token **tokbuf,
             *err |= MEMORY_ERRO;
             return 1;
         }
-        (*tokbuf)[pasted - 1 + *have].pt_each = def_each;
-        (*tokbuf)[pasted - 1 + *have].pt_sep  = def_sep;
+        /* free(paste_expanded); */
+        (*tokbuf)[pasted - 1 + *have].pt_each   = def_each;
+        (*tokbuf)[pasted - 1 + *have].pt_sep    = def_sep;
+        (*tokbuf)[pasted - 1 + *have].allocated = paste_expanded;
         pasted++;
         ns++;
     }
@@ -647,8 +649,16 @@ static uc_t next_set(const char **text, Dset *set_, len_t *ns,
 static void free_sets(Dset *sets, const len_t n_sets)
 {
     len_t i = 0;
+    len_t t = 0;
     if (!sets) return;
     while (i < n_sets) {
+        t = 0;
+        while (t < sets[i].n_tok) {
+            free(sets[i]._token_[t].allocated);
+            t++;
+        }
+        /* free(sets[i]._token_->allocated); */
+        /* if (sets[i]._token_->allocated) free(sets[i]._token_->allocated); */
         free(sets[i]._token_);
         i++;
     }
@@ -875,8 +885,7 @@ static uc_t run_sl(const Dset *const series, const int debug)
         rc = run_cmd(cmd);
         free(cmd);
         return rc;
-    }
-    else {
+    } else {
         _out_(cmd, strlen(cmd));
         print("");
     }

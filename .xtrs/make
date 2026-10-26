@@ -1,0 +1,36 @@
+cc: gcc
+ 
+incld: /usr/local/include
+llibd: /usr/local/lib
+
+lH: lcore.h
+la: lcore.a
+
+^cF[each="{t}.c", sep=" "]
+^oF[each="{t}.o", sep=" "]
++ ^cF[each="libs/lcpu/{t}.c", sep=" "]
++ ^oF[each="libs/lcpu/{t}.o", sep=" "]
+
+fsrc: core parser releases
+
+source_code: [^cF] $(^fsrc)
+
+make: $(cc) -c $(source_code)
+clean: rm -f *.o;
+
+
+@static
+acc: ar rcs
+
+o_objects: [^oF] $(^fsrc)
+
+make: $(acc) $(la) $(o_objects)
+clean: rm -f $(la)
+
+
+@clinkf
+make: maker clean && maker clean @static && \
+      maker && maker @static &&             \
+      sudo cp $(la) $(llibd) &&             \
+      sudo cp $(lH) $(incld) ;
+clean: rm -f $(la)
